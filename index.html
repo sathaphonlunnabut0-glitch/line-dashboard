@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>LINE File Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body {
+      font-family: Arial;
+      background: #0f172a;
+      color: white;
+      padding: 30px;
+    }
+    h1 { margin-bottom: 20px; }
+    input, button {
+      padding: 8px;
+      margin: 5px 0;
+      border-radius: 6px;
+      border: none;
+    }
+    button {
+      cursor: pointer;
+      background: #22c55e;
+      color: white;
+    }
+    .file-card {
+      background: #1e293b;
+      padding: 15px;
+      border-radius: 10px;
+      margin-top: 10px;
+    }
+    img {
+      max-width: 200px;
+      display: block;
+      margin-top: 10px;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+
+<h1>LINE Backup Dashboard</h1>
+
+<div id="auth">
+  <input type="email" id="email" placeholder="Enter email" />
+  <button onclick="login()">Login</button>
+</div>
+
+<div id="files" style="display:none;">
+  <button onclick="logout()">Logout</button>
+  <h2>Your Files</h2>
+  <div id="fileList"></div>
+</div>
+
+<script>
+  const supabase = window.supabase.createClient(
+    "https://sghljaxzdbiwfihkjvdp.supabase.co",
+    "sb_publishable_zI0MUYAb5ZeYIEvtwl4D3A_2VpPYqjk"
+  );
+
+  async function login() {
+    const email = document.getElementById("email").value;
+    await supabase.auth.signInWithOtp({ email });
+    alert("Check your email for login link");
+  }
+
+  async function logout() {
+    await supabase.auth.signOut();
+    location.reload();
+  }
+
+  async function loadFiles() {
+    const { data, error } = await supabase
+      .storage
+      .from("line-files")
+      .list("", { sortBy: { column: "created_at", order: "desc" } });
+
+    if (error) {
+      alert("Error loading files");
+      return;
+    }
+
+    const container = document.getElementById("fileList");
+    container.innerHTML = "";
+
+    data.forEach(file => {
+      const { data: publicUrl } = supabase
+        .storage
+        .from("line-files")
+        .getPublicUrl(file.name);
+
+      const div = document.createElement("div");
+      div.className = "file-card";
+
+      div.innerHTML = `
+        <strong>${file.name}</strong><br/>
+        <a href="${publicUrl.publicUrl}" target="_blank">
+          <button>Download</button>
+        </a>
+        <button onclick="deleteFile('${file.name}')">Delete</button>
+        ${file.name.match(/\.(jpg|png|jpeg|gif)$/i) ? 
+          `<img src="${publicUrl.publicUrl}" />` : ""}
+      `;
+
+      container.appendChild(div);
+    });
+  }
+
+  async function deleteFile(name) {
+    if (!confirm("Delete this file?")) return;
+
+    await supabase.storage
+      .from("line-files")
+      .remove([name]);
+
+    loadFiles();
+  }
+
+  supabase.auth.getSession().then(({ data }) => {
+    if (data.session) {
+      document.getElementById("auth").style.display = "none";
+      document.getElementById("files").style.display = "block";
+      loadFiles();
+    }
+  });
+</script>
+
+</body>
+</html>
