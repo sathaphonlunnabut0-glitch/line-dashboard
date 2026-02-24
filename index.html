@@ -74,12 +74,12 @@
 
   // REGISTER
   document.getElementById("registerBtn").onclick = async () => {
-    const email = email.value
-    const password = password.value
+    const emailInput = document.getElementById("email").value
+    const passwordInput = document.getElementById("password").value
 
     const { error } = await supabaseClient.auth.signUp({
-      email,
-      password
+      email: emailInput,
+      password: passwordInput
     })
 
     document.getElementById("status").innerText =
@@ -88,12 +88,12 @@
 
   // LOGIN
   document.getElementById("loginBtn").onclick = async () => {
-    const email = email.value
-    const password = password.value
+    const emailInput = document.getElementById("email").value
+    const passwordInput = document.getElementById("password").value
 
     const { error } = await supabaseClient.auth.signInWithPassword({
-      email,
-      password
+      email: emailInput,
+      password: passwordInput
     })
 
     if (error) {
