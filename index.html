@@ -30,6 +30,10 @@
       margin: 5px;
     }
 
+    .delete-btn {
+      background: #ef4444;
+    }
+
     .card {
       background: #1e293b;
       padding: 15px;
@@ -80,13 +84,13 @@
     "sb_publishable_zI0MUYAb5ZeYIEvtwl4D3A_2VpPYqjk"
   )
 
-  // โหลด session ตอนเปิดเว็บ
+  let currentUser = null
+
   window.addEventListener("load", async () => {
     const { data: { session } } = await supabaseClient.auth.getSession()
     if (session) showDashboard(session.user)
   })
 
-  // REGISTER
   document.getElementById("registerBtn").onclick = async () => {
     const emailInput = document.getElementById("email").value
     const passwordInput = document.getElementById("password").value
@@ -100,7 +104,6 @@
       error ? error.message : "สมัครสำเร็จ!"
   }
 
-  // LOGIN
   document.getElementById("loginBtn").onclick = async () => {
     const emailInput = document.getElementById("email").value
     const passwordInput = document.getElementById("password").value
@@ -117,88 +120,83 @@
     }
   }
 
-  // แสดง Dashboard
   function showDashboard(user) {
+    currentUser = user
     document.getElementById("authSection").style.display = "none"
     document.getElementById("dashboard").style.display = "block"
-    document.getElementById("userEmail").innerText =
-      "Email: " + user.email
-
-    loadFiles(user)
+    document.getElementById("userEmail").innerText = "Email: " + user.email
+    loadFiles()
   }
 
-  // โหลดไฟล์จาก Storage
-  async function loadFiles(user) {
+  async function loadFiles() {
 
-  const fileList = document.getElementById("fileList")
-  fileList.innerHTML = "กำลังโหลด..."
+    const fileList = document.getElementById("fileList")
+    fileList.innerHTML = "กำลังโหลด..."
 
-  // ดึงจาก root ของ bucket
-  const { data, error } = await supabaseClient
-    .storage
-    .from("line-files")
-    .list()
-
-  if (error) {
-    console.error("LIST ERROR:", error)
-    fileList.innerHTML = "เกิดข้อผิดพลาดในการโหลดไฟล์"
-    return
-  }
-
-  console.log("FILES:", data)
-
-  if (!data || data.length === 0) {
-    document.getElementById("fileCount").innerText = 0
-    fileList.innerHTML = "ยังไม่มีไฟล์ใน bucket"
-    return
-  }
-
-  document.getElementById("fileCount").innerText = data.length
-  fileList.innerHTML = ""
-
-  data.forEach(file => {
-
-    // ข้ามโฟลเดอร์
-    if (file.name.includes('/')) return
-
-    const { data: publicUrl } = supabaseClient
+    const { data, error } = await supabaseClient
       .storage
       .from("line-files")
-      .getPublicUrl(file.name)
+      .list()
 
-    fileList.innerHTML += `
-      <div style="margin-bottom:20px;">
-        <p>${file.name}</p>
-        <img src="${publicUrl.publicUrl}" width="200">
-        <br>
-        <a href="${publicUrl.publicUrl}" target="_blank">
-          <button>Download</button>
-        </a>
-      </div>
-    `
-  })
-}
-  //เพิ่มฟังก์ชัน deleteFile()
-  async function deleteFile(fileName) {
+    if (error) {
+      fileList.innerHTML = "เกิดข้อผิดพลาดในการโหลดไฟล์"
+      return
+    }
 
-  const confirmDelete = confirm("ต้องการลบไฟล์นี้ใช่ไหม?")
-  if (!confirmDelete) return
+    if (!data || data.length === 0) {
+      document.getElementById("fileCount").innerText = 0
+      fileList.innerHTML = "ยังไม่มีไฟล์ใน bucket"
+      return
+    }
 
-  const { error } = await supabaseClient
-    .storage
-    .from("line-files")
-    .remove([fileName])
+    document.getElementById("fileCount").innerText = data.length
+    fileList.innerHTML = ""
 
-  if (error) {
-    alert("ลบไม่สำเร็จ: " + error.message)
-    return
+    data.forEach(file => {
+
+      if (file.name.includes('/')) return
+
+      const { data: publicUrl } = supabaseClient
+        .storage
+        .from("line-files")
+        .getPublicUrl(file.name)
+
+      fileList.innerHTML += `
+        <div style="margin-bottom:20px;">
+          <p>${file.name}</p>
+          <img src="${publicUrl.publicUrl}" width="200">
+          <br>
+          <a href="${publicUrl.publicUrl}" target="_blank">
+            <button>Download</button>
+          </a>
+          <button class="delete-btn"
+            onclick="deleteFile('${file.name}')">
+            Delete
+          </button>
+        </div>
+      `
+    })
   }
 
-  alert("ลบสำเร็จ")
-  loadFiles() // รีโหลดรายการใหม่
-}
+  async function deleteFile(fileName) {
 
-  // LOGOUT
+    const confirmDelete = confirm("ต้องการลบไฟล์นี้ใช่ไหม?")
+    if (!confirmDelete) return
+
+    const { error } = await supabaseClient
+      .storage
+      .from("line-files")
+      .remove([fileName])
+
+    if (error) {
+      alert("ลบไม่สำเร็จ: " + error.message)
+      return
+    }
+
+    alert("ลบสำเร็จ")
+    loadFiles()
+  }
+
   document.getElementById("logoutBtn").onclick = async () => {
     await supabaseClient.auth.signOut()
     location.reload()
