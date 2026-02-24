@@ -48,68 +48,31 @@
     "sb_publishable_zI0MUYAb5ZeYIEvtwl4D3A_2VpPYqjk"
   )
 
-  const status = document.getElementById("status")
-  const emailInput = document.getElementById("email")
-  const loginBtn = document.getElementById("loginBtn")
-
-  // 🔥 ตรวจสอบ session ตอนโหลดหน้า
+  // ✅ เช็ค session ตอนโหลดหน้า
   window.addEventListener("load", async () => {
-    const { data } = await supabaseClient.auth.getSession()
+    const { data: { session } } = await supabaseClient.auth.getSession()
 
-    if (data.session) {
-      showDashboard()
+    if (session) {
+      document.getElementById("status").innerText =
+        "Login สำเร็จ: " + session.user.email
     }
   })
 
-  // 🔥 ปุ่ม Login
-  loginBtn.addEventListener("click", async () => {
-    const email = emailInput.value
+  // ปุ่ม login
+  document.getElementById("loginBtn").addEventListener("click", async () => {
+    const email = document.getElementById("email").value
 
     const { error } = await supabaseClient.auth.signInWithOtp({
       email: email
     })
 
     if (error) {
-      status.innerText = error.message
+      document.getElementById("status").innerText = error.message
     } else {
-      status.innerText = "Check your email for login link!"
+      document.getElementById("status").innerText =
+        "Check your email for login link!"
     }
   })
-
-  // 🔥 เมื่อ Login สำเร็จ
-  function showDashboard() {
-    status.innerText = "Login successful!"
-    emailInput.style.display = "none"
-    loginBtn.style.display = "none"
-
-    loadFiles()
-  }
-
-  // 🔥 ดึงไฟล์จาก Supabase Storage
-  async function loadFiles() {
-    const { data, error } = await supabaseClient.storage
-      .from("YOUR_BUCKET_NAME")   // 🔥 ใส่ชื่อ bucket ของคุณตรงนี้
-      .list("", { limit: 100 })
-
-    if (error) {
-      status.innerText = error.message
-      return
-    }
-
-    status.innerText = "Found " + data.length + " files"
-
-    data.forEach(file => {
-      const link = document.createElement("a")
-      link.href = supabaseClient.storage
-        .from("YOUR_BUCKET_NAME")
-        .getPublicUrl(file.name).data.publicUrl
-      link.innerText = file.name
-      link.style.display = "block"
-      link.style.color = "#22c55e"
-      link.target = "_blank"
-      document.body.appendChild(link)
-    })
-  }
 </script>
 
 </body>
