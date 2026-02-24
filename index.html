@@ -130,49 +130,40 @@
   // โหลดไฟล์จาก Storage
   async function loadFiles(user) {
 
-    const folderName = user.id
+  const { data, error } = await supabaseClient
+    .storage
+    .from("line-files")
+    .list("", { limit: 100 })   // ดึงจาก root
 
-    const { data, error } = await supabaseClient
+  if (error) {
+    console.log(error)
+    return
+  }
+
+  document.getElementById("fileCount").innerText = data.length
+
+  const fileList = document.getElementById("fileList")
+  fileList.innerHTML = ""
+
+  data.forEach(file => {
+
+    const { data: publicUrl } = supabaseClient
       .storage
       .from("line-files")
-      .list(folderName, { limit: 100 })
+      .getPublicUrl(file.name)
 
-    if (error) {
-      console.log(error)
-      return
-    }
-
-    document.getElementById("fileCount").innerText = data.length
-
-    const fileList = document.getElementById("fileList")
-    fileList.innerHTML = ""
-
-    if (data.length === 0) {
-      fileList.innerHTML = "<p>ยังไม่มีไฟล์</p>"
-      return
-    }
-
-    data.forEach(file => {
-
-      const filePath = `${folderName}/${file.name}`
-
-      const { data: publicUrl } = supabaseClient
-        .storage
-        .from("line-files")
-        .getPublicUrl(filePath)
-
-      fileList.innerHTML += `
-        <div style="margin-bottom:15px;">
-          <p>${file.name}</p>
-          <img src="${publicUrl.publicUrl}" width="200">
-          <br>
-          <a href="${publicUrl.publicUrl}" download>
-            <button>Download</button>
-          </a>
-        </div>
-      `
-    })
-  }
+    fileList.innerHTML += `
+      <div style="margin-bottom:15px;">
+        <p>${file.name}</p>
+        <img src="${publicUrl.publicUrl}" width="200">
+        <br>
+        <a href="${publicUrl.publicUrl}" download>
+          <button>Download</button>
+        </a>
+      </div>
+    `
+  })
+}
 
   // LOGOUT
   document.getElementById("logoutBtn").onclick = async () => {
