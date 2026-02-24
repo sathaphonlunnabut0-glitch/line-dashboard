@@ -130,39 +130,54 @@
   // โหลดไฟล์จาก Storage
   async function loadFiles(user) {
 
+  const fileList = document.getElementById("fileList")
+  fileList.innerHTML = "กำลังโหลด..."
+
   const { data, error } = await supabaseClient
     .storage
     .from("line-files")
-    .list("", { limit: 100 })   // ดึงจาก root
+    .list("", { limit: 100 })
 
   if (error) {
-    console.log(error)
+    console.log("LIST ERROR:", error)
+    fileList.innerHTML = "โหลดไฟล์ไม่สำเร็จ"
+    return
+  }
+
+  if (!data || data.length === 0) {
+    document.getElementById("fileCount").innerText = 0
+    fileList.innerHTML = "ยังไม่มีไฟล์"
     return
   }
 
   document.getElementById("fileCount").innerText = data.length
-
-  const fileList = document.getElementById("fileList")
   fileList.innerHTML = ""
 
-  data.forEach(file => {
+  for (const file of data) {
 
-    const { data: publicUrl } = supabaseClient
-      .storage
-      .from("line-files")
-      .getPublicUrl(file.name)
+    // ใช้ createSignedUrl แทน getPublicUrl
+    const { data: signed, error: urlError } =
+      await supabaseClient
+        .storage
+        .from("line-files")
+        .createSignedUrl(file.name, 3600)
+
+    if (urlError) {
+      console.log("SIGNED URL ERROR:", urlError)
+      continue
+    }
 
     fileList.innerHTML += `
-      <div style="margin-bottom:15px;">
+      <div style="margin-bottom:20px;">
         <p>${file.name}</p>
-        <img src="${publicUrl.publicUrl}" width="200">
+        <img src="${signed.signedUrl}" width="200">
         <br>
-        <a href="${publicUrl.publicUrl}" download>
+        <a href="${signed.signedUrl}" download>
           <button>Download</button>
         </a>
       </div>
     `
-  })
+  }
 }
 
   // LOGOUT
