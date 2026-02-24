@@ -36,6 +36,11 @@
       border-radius: 10px;
       margin-top: 15px;
     }
+
+    img {
+      margin-top: 8px;
+      border-radius: 8px;
+    }
   </style>
 </head>
 <body>
@@ -52,11 +57,19 @@
 </div>
 
 <div id="dashboard" style="display:none;">
+
   <div class="card">
     <h3>User Info</h3>
     <p id="userEmail"></p>
     <button id="logoutBtn">Logout</button>
   </div>
+
+  <div class="card">
+    <h3>Backup Files</h3>
+    <p>จำนวนไฟล์: <span id="fileCount">0</span></p>
+    <div id="fileList"></div>
+  </div>
+
 </div>
 
 <script>
@@ -67,6 +80,7 @@
     "sb_publishable_zI0MUYAb5ZeYIEvtwl4D3A_2VpPYqjk"
   )
 
+  // โหลด session ตอนเปิดเว็บ
   window.addEventListener("load", async () => {
     const { data: { session } } = await supabaseClient.auth.getSession()
     if (session) showDashboard(session.user)
@@ -103,13 +117,64 @@
     }
   }
 
+  // แสดง Dashboard
   function showDashboard(user) {
     document.getElementById("authSection").style.display = "none"
     document.getElementById("dashboard").style.display = "block"
     document.getElementById("userEmail").innerText =
       "Email: " + user.email
+
+    loadFiles(user)
   }
 
+  // โหลดไฟล์จาก Storage
+  async function loadFiles(user) {
+
+    const folderName = user.id
+
+    const { data, error } = await supabaseClient
+      .storage
+      .from("line-files")
+      .list(folderName, { limit: 100 })
+
+    if (error) {
+      console.log(error)
+      return
+    }
+
+    document.getElementById("fileCount").innerText = data.length
+
+    const fileList = document.getElementById("fileList")
+    fileList.innerHTML = ""
+
+    if (data.length === 0) {
+      fileList.innerHTML = "<p>ยังไม่มีไฟล์</p>"
+      return
+    }
+
+    data.forEach(file => {
+
+      const filePath = `${folderName}/${file.name}`
+
+      const { data: publicUrl } = supabaseClient
+        .storage
+        .from("line-files")
+        .getPublicUrl(filePath)
+
+      fileList.innerHTML += `
+        <div style="margin-bottom:15px;">
+          <p>${file.name}</p>
+          <img src="${publicUrl.publicUrl}" width="200">
+          <br>
+          <a href="${publicUrl.publicUrl}" download>
+            <button>Download</button>
+          </a>
+        </div>
+      `
+    })
+  }
+
+  // LOGOUT
   document.getElementById("logoutBtn").onclick = async () => {
     await supabaseClient.auth.signOut()
     location.reload()
