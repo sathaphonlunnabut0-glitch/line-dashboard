@@ -178,6 +178,25 @@
     `
   })
 }
+  //เพิ่มฟังก์ชัน deleteFile()
+  async function deleteFile(fileName) {
+
+  const confirmDelete = confirm("ต้องการลบไฟล์นี้ใช่ไหม?")
+  if (!confirmDelete) return
+
+  const { error } = await supabaseClient
+    .storage
+    .from("line-files")
+    .remove([fileName])
+
+  if (error) {
+    alert("ลบไม่สำเร็จ: " + error.message)
+    return
+  }
+
+  alert("ลบสำเร็จ")
+  loadFiles() // รีโหลดรายการใหม่
+}
 
   // LOGOUT
   document.getElementById("logoutBtn").onclick = async () => {
