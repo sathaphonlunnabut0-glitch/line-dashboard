@@ -15,9 +15,9 @@
 
     input {
       padding: 8px;
+      margin: 5px;
       border-radius: 6px;
       border: none;
-      margin-right: 10px;
     }
 
     button {
@@ -27,7 +27,7 @@
       background: #22c55e;
       color: white;
       cursor: pointer;
-      margin-top: 5px;
+      margin: 5px;
     }
 
     .card {
@@ -36,41 +36,27 @@
       border-radius: 10px;
       margin-top: 15px;
     }
-
-    img {
-      max-width: 200px;
-      display: block;
-      margin-top: 10px;
-      border-radius: 8px;
-    }
   </style>
 </head>
 <body>
 
 <h1>LINE Backup Dashboard</h1>
 
-<!-- Login Section -->
-<div id="loginSection">
-  <input type="email" id="email" placeholder="Enter email">
+<div id="authSection">
+  <input type="email" id="email" placeholder="Email">
+  <input type="password" id="password" placeholder="Password">
+  <br>
+  <button id="registerBtn">Register</button>
   <button id="loginBtn">Login</button>
   <p id="status"></p>
 </div>
 
-<!-- Dashboard Section -->
 <div id="dashboard" style="display:none;">
-
   <div class="card">
     <h3>User Info</h3>
     <p id="userEmail"></p>
-    <p id="fileCount"></p>
     <button id="logoutBtn">Logout</button>
   </div>
-
-  <div class="card">
-    <h3>Backup Files</h3>
-    <div id="fileList"></div>
-  </div>
-
 </div>
 
 <script>
@@ -81,108 +67,53 @@
     "sb_publishable_zI0MUYAb5ZeYIEvtwl4D3A_2VpPYqjk"
   )
 
-  // ==========================
-  // CHECK SESSION ON LOAD
-  // ==========================
   window.addEventListener("load", async () => {
     const { data: { session } } = await supabaseClient.auth.getSession()
-
-    if (session) {
-      showDashboard(session.user)
-    }
+    if (session) showDashboard(session.user)
   })
 
-  // ==========================
-  // LOGIN
-  // ==========================
-  document.getElementById("loginBtn").addEventListener("click", async () => {
-    const email = document.getElementById("email").value
+  // REGISTER
+  document.getElementById("registerBtn").onclick = async () => {
+    const email = email.value
+    const password = password.value
 
-    const { error } = await supabaseClient.auth.signInWithOtp({
-      email: email,
-      options: {
-        emailRedirectTo:
-          "https://sathaphonlunnabut0-glitch.github.io/line-dashboard/"
-      }
+    const { error } = await supabaseClient.auth.signUp({
+      email,
+      password
+    })
+
+    document.getElementById("status").innerText =
+      error ? error.message : "สมัครสำเร็จ!"
+  }
+
+  // LOGIN
+  document.getElementById("loginBtn").onclick = async () => {
+    const email = email.value
+    const password = password.value
+
+    const { error } = await supabaseClient.auth.signInWithPassword({
+      email,
+      password
     })
 
     if (error) {
       document.getElementById("status").innerText = error.message
     } else {
-      document.getElementById("status").innerText =
-        "Check your email for login link!"
-    }
-  })
-
-  // ==========================
-  // SHOW DASHBOARD
-  // ==========================
-  async function showDashboard(user) {
-
-    document.getElementById("loginSection").style.display = "none"
-    document.getElementById("dashboard").style.display = "block"
-
-    document.getElementById("userEmail").innerText =
-      "Email: " + user.email
-
-    const userFolder = user.id
-
-    const { data: files, error } =
-      await supabaseClient.storage
-        .from("backups")
-        .list(userFolder)
-
-    if (error) {
-      document.getElementById("fileList").innerText = error.message
-      return
-    }
-
-    document.getElementById("fileCount").innerText =
-      "Total Files: " + files.length
-
-    const fileListDiv = document.getElementById("fileList")
-    fileListDiv.innerHTML = ""
-
-    for (let file of files) {
-
-      const filePath = userFolder + "/" + file.name
-
-      const { data } =
-        supabaseClient.storage
-          .from("backups")
-          .getPublicUrl(filePath)
-
-      const fileUrl = data.publicUrl
-
-      const fileDiv = document.createElement("div")
-      fileDiv.className = "card"
-
-      fileDiv.innerHTML = `
-        <strong>${file.name}</strong><br>
-        <a href="${fileUrl}" target="_blank">
-          <button>Download</button>
-        </a>
-      `
-
-      // ถ้าเป็นรูปภาพ
-      if (file.name.match(/\.(jpg|jpeg|png|gif)$/i)) {
-        const img = document.createElement("img")
-        img.src = fileUrl
-        fileDiv.appendChild(img)
-      }
-
-      fileListDiv.appendChild(fileDiv)
+      location.reload()
     }
   }
 
-  // ==========================
-  // LOGOUT
-  // ==========================
-  document.getElementById("logoutBtn").addEventListener("click", async () => {
+  function showDashboard(user) {
+    document.getElementById("authSection").style.display = "none"
+    document.getElementById("dashboard").style.display = "block"
+    document.getElementById("userEmail").innerText =
+      "Email: " + user.email
+  }
+
+  document.getElementById("logoutBtn").onclick = async () => {
     await supabaseClient.auth.signOut()
     location.reload()
-  })
-
+  }
 </script>
 
 </body>
