@@ -48,7 +48,6 @@
     "sb_publishable_zI0MUYAb5ZeYIEvtwl4D3A_2VpPYqjk"
   )
 
-  // ✅ เช็ค session ตอนโหลดหน้า
   window.addEventListener("load", async () => {
     const { data: { session } } = await supabaseClient.auth.getSession()
 
@@ -58,12 +57,15 @@
     }
   })
 
-  // ปุ่ม login
   document.getElementById("loginBtn").addEventListener("click", async () => {
     const email = document.getElementById("email").value
 
     const { error } = await supabaseClient.auth.signInWithOtp({
-      email: email
+      email: email,
+      options: {
+        emailRedirectTo:
+          "https://sathaphonlunnabut0-glitch.github.io/line-dashboard/"
+      }
     })
 
     if (error) {
