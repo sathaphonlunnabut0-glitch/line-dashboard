@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8" />
   <title>LINE Backup Dashboard</title>
-
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
@@ -28,6 +27,21 @@
       background: #22c55e;
       color: white;
       cursor: pointer;
+      margin-top: 5px;
+    }
+
+    .card {
+      background: #1e293b;
+      padding: 15px;
+      border-radius: 10px;
+      margin-top: 15px;
+    }
+
+    img {
+      max-width: 200px;
+      display: block;
+      margin-top: 10px;
+      border-radius: 8px;
     }
   </style>
 </head>
@@ -35,10 +49,29 @@
 
 <h1>LINE Backup Dashboard</h1>
 
-<input type="email" id="email" placeholder="Enter email">
-<button id="loginBtn">Login</button>
+<!-- Login Section -->
+<div id="loginSection">
+  <input type="email" id="email" placeholder="Enter email">
+  <button id="loginBtn">Login</button>
+  <p id="status"></p>
+</div>
 
-<p id="status"></p>
+<!-- Dashboard Section -->
+<div id="dashboard" style="display:none;">
+
+  <div class="card">
+    <h3>User Info</h3>
+    <p id="userEmail"></p>
+    <p id="fileCount"></p>
+    <button id="logoutBtn">Logout</button>
+  </div>
+
+  <div class="card">
+    <h3>Backup Files</h3>
+    <div id="fileList"></div>
+  </div>
+
+</div>
 
 <script>
   const { createClient } = supabase
@@ -48,15 +81,20 @@
     "sb_publishable_zI0MUYAb5ZeYIEvtwl4D3A_2VpPYqjk"
   )
 
+  // ==========================
+  // CHECK SESSION ON LOAD
+  // ==========================
   window.addEventListener("load", async () => {
     const { data: { session } } = await supabaseClient.auth.getSession()
 
     if (session) {
-      document.getElementById("status").innerText =
-        "Login สำเร็จ: " + session.user.email
+      showDashboard(session.user)
     }
   })
 
+  // ==========================
+  // LOGIN
+  // ==========================
   document.getElementById("loginBtn").addEventListener("click", async () => {
     const email = document.getElementById("email").value
 
@@ -75,6 +113,76 @@
         "Check your email for login link!"
     }
   })
+
+  // ==========================
+  // SHOW DASHBOARD
+  // ==========================
+  async function showDashboard(user) {
+
+    document.getElementById("loginSection").style.display = "none"
+    document.getElementById("dashboard").style.display = "block"
+
+    document.getElementById("userEmail").innerText =
+      "Email: " + user.email
+
+    const userFolder = user.id
+
+    const { data: files, error } =
+      await supabaseClient.storage
+        .from("backups")
+        .list(userFolder)
+
+    if (error) {
+      document.getElementById("fileList").innerText = error.message
+      return
+    }
+
+    document.getElementById("fileCount").innerText =
+      "Total Files: " + files.length
+
+    const fileListDiv = document.getElementById("fileList")
+    fileListDiv.innerHTML = ""
+
+    for (let file of files) {
+
+      const filePath = userFolder + "/" + file.name
+
+      const { data } =
+        supabaseClient.storage
+          .from("backups")
+          .getPublicUrl(filePath)
+
+      const fileUrl = data.publicUrl
+
+      const fileDiv = document.createElement("div")
+      fileDiv.className = "card"
+
+      fileDiv.innerHTML = `
+        <strong>${file.name}</strong><br>
+        <a href="${fileUrl}" target="_blank">
+          <button>Download</button>
+        </a>
+      `
+
+      // ถ้าเป็นรูปภาพ
+      if (file.name.match(/\.(jpg|jpeg|png|gif)$/i)) {
+        const img = document.createElement("img")
+        img.src = fileUrl
+        fileDiv.appendChild(img)
+      }
+
+      fileListDiv.appendChild(fileDiv)
+    }
+  }
+
+  // ==========================
+  // LOGOUT
+  // ==========================
+  document.getElementById("logoutBtn").addEventListener("click", async () => {
+    await supabaseClient.auth.signOut()
+    location.reload()
+  })
+
 </script>
 
 </body>
