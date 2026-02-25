@@ -71,9 +71,9 @@ async function loadAllFiles() {
           <p>${fullPath}</p>
           ${isImage ? `<img src="${publicUrl.publicUrl}">` : `<p>📄 File</p>`}
           <div class="actions">
-            <a href="${publicUrl.publicUrl}" download>
-                <button>Download</button>
-            </a>
+            <button onclick="downloadFile('${publicUrl.publicUrl}', '${file.name}')">
+                 Download
+            </button>
             <button class="delete-btn" onclick="deleteFile('${fullPath}')">
               Delete
             </button>
