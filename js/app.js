@@ -90,6 +90,15 @@ async function loadAllFiles() {
   }
 }
 
+function downloadFile(url, filename) {
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
 async function deleteFile(path) {
   if (!confirm("ต้องการลบไฟล์นี้ใช่ไหม?")) return
 
