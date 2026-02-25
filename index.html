@@ -1,41 +1,72 @@
 <!DOCTYPE html>
-<html>
+<html lang="th">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LINE Backup Dashboard</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>LINE Backup Dashboard</title>
 
-<link rel="stylesheet" href="css/style.css">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- CSS -->
+  <link rel="stylesheet" href="css/style.css">
+
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 
 <body>
 
-<h1>LINE Backup Dashboard</h1>
+  <div class="container">
 
-<div id="authSection">
-  <input type="email" id="email" placeholder="Email">
-  <input type="password" id="password" placeholder="Password">
-  <button id="registerBtn">Register</button>
-  <button id="loginBtn">Login</button>
-  <p id="status"></p>
-</div>
+    <header class="header">
+      <h1>LINE Backup Dashboard</h1>
+    </header>
 
-<div id="dashboard" style="display:none;">
+    <!-- ================= AUTH ================= -->
+    <section id="authSection" class="card auth-card">
+      <h3>เข้าสู่ระบบ</h3>
 
-  <div class="card">
-    <p id="userEmail"></p>
-    <button id="logoutBtn">Logout</button>
+      <input type="email" id="email" placeholder="Email">
+      <input type="password" id="password" placeholder="Password">
+
+      <div class="auth-actions">
+        <button id="registerBtn">Register</button>
+        <button id="loginBtn">Login</button>
+      </div>
+
+      <p id="status" class="status-text"></p>
+    </section>
+
+    <!-- ================= DASHBOARD ================= -->
+    <section id="dashboard" style="display:none;">
+
+      <!-- USER CARD -->
+      <div class="card user-card">
+        <div>
+          <p id="userEmail"></p>
+        </div>
+        <button id="logoutBtn" class="logout-btn">Logout</button>
+      </div>
+
+      <!-- FILE CARD -->
+      <div class="card file-card-wrapper">
+        <div class="file-header">
+          <h3>Backup Files</h3>
+          <p>จำนวนไฟล์: <span id="fileCount">0</span></p>
+        </div>
+
+        <div id="fileList" class="file-grid"></div>
+      </div>
+
+    </section>
+
   </div>
 
-  <div class="card">
-    <h3>Backup Files</h3>
-    <p>จำนวนไฟล์: <span id="fileCount">0</span></p>
-    <div id="fileList"></div>
+  <!-- Optional Loading Overlay -->
+  <div id="loadingOverlay" class="loading-overlay" style="display:none;">
+    <div class="spinner"></div>
   </div>
 
-</div>
+  <!-- JS -->
+  <script src="js/app.js"></script>
 
-<script src="js/app.js"></script>
 </body>
 </html>
