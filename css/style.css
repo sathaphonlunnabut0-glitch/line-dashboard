@@ -1,1 +1,70 @@
+body {
+  font-family: Arial, sans-serif;
+  background: #0f172a;
+  color: white;
+  margin: 0;
+  padding: 15px;
+}
 
+h1 {
+  font-size: 22px;
+}
+
+input {
+  padding: 10px;
+  margin: 5px 0;
+  border-radius: 8px;
+  border: none;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+button {
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+  background: #22c55e;
+  color: white;
+  cursor: pointer;
+  margin-top: 5px;
+  width: 100%;
+}
+
+button:hover {
+  opacity: 0.9;
+}
+
+.delete-btn {
+  background: #ef4444;
+}
+
+.card {
+  background: #1e293b;
+  padding: 15px;
+  border-radius: 12px;
+  margin-top: 15px;
+}
+
+.file-card {
+  background: #334155;
+  padding: 12px;
+  border-radius: 10px;
+  margin-bottom: 12px;
+}
+
+img {
+  width: 100%;
+  max-width: 250px;
+  border-radius: 8px;
+  margin-top: 8px;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.actions button {
+  flex: 1;
+}
