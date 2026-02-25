@@ -98,6 +98,14 @@ button:hover {
   opacity: 0.8;
   word-break: break-all;
 }
+.actions a {
+  flex: 1;
+  display: flex;
+}
+
+.actions a button {
+  width: 100%;
+}
 
 /* ====== IMAGE ====== */
 img {
