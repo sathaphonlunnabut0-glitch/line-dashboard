@@ -1,70 +1,135 @@
+/* ====== GLOBAL ====== */
 body {
-  font-family: Arial, sans-serif;
-  background: #0f172a;
-  color: white;
+  font-family: 'Segoe UI', sans-serif;
   margin: 0;
-  padding: 15px;
+  padding: 20px;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  color: #f1f5f9;
 }
 
+/* ====== TITLE ====== */
 h1 {
-  font-size: 22px;
+  text-align: center;
+  font-size: 26px;
+  margin-bottom: 25px;
+  background: linear-gradient(90deg, #22c55e, #06b6d4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
+/* ====== GLASS CARD ====== */
+.card {
+  background: rgba(30, 41, 59, 0.6);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.1);
+  padding: 20px;
+  border-radius: 16px;
+  margin-bottom: 20px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+  transition: 0.3s;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+}
+
+/* ====== INPUT ====== */
 input {
-  padding: 10px;
-  margin: 5px 0;
-  border-radius: 8px;
-  border: none;
   width: 100%;
-  box-sizing: border-box;
+  padding: 12px;
+  margin: 8px 0;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.05);
+  color: white;
+  outline: none;
+  transition: 0.3s;
 }
 
+input:focus {
+  border-color: #22c55e;
+  box-shadow: 0 0 10px rgba(34,197,94,0.4);
+}
+
+/* ====== BUTTON ====== */
 button {
-  padding: 10px;
-  border-radius: 8px;
+  padding: 12px;
+  border-radius: 10px;
   border: none;
-  background: #22c55e;
+  background: linear-gradient(90deg, #22c55e, #16a34a);
   color: white;
+  font-weight: bold;
   cursor: pointer;
-  margin-top: 5px;
+  margin-top: 8px;
   width: 100%;
+  transition: 0.3s;
 }
 
 button:hover {
-  opacity: 0.9;
+  transform: scale(1.03);
+  box-shadow: 0 5px 15px rgba(34,197,94,0.4);
 }
 
 .delete-btn {
-  background: #ef4444;
+  background: linear-gradient(90deg, #ef4444, #dc2626);
 }
 
-.card {
-  background: #1e293b;
-  padding: 15px;
-  border-radius: 12px;
-  margin-top: 15px;
+.delete-btn:hover {
+  box-shadow: 0 5px 15px rgba(239,68,68,0.4);
 }
 
+/* ====== FILE CARD ====== */
 .file-card {
-  background: #334155;
-  padding: 12px;
-  border-radius: 10px;
-  margin-bottom: 12px;
+  background: rgba(51, 65, 85, 0.6);
+  border: 1px solid rgba(255,255,255,0.05);
+  padding: 15px;
+  border-radius: 14px;
+  margin-bottom: 15px;
+  transition: 0.3s;
 }
 
+.file-card:hover {
+  background: rgba(51, 65, 85, 0.8);
+}
+
+.file-card p {
+  font-size: 13px;
+  opacity: 0.8;
+  word-break: break-all;
+}
+
+/* ====== IMAGE ====== */
 img {
   width: 100%;
-  max-width: 250px;
-  border-radius: 8px;
-  margin-top: 8px;
+  max-width: 300px;
+  border-radius: 12px;
+  margin-top: 10px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.4);
 }
 
+/* ====== ACTION BUTTONS ====== */
 .actions {
   display: flex;
   gap: 10px;
-  margin-top: 8px;
+  margin-top: 12px;
 }
 
 .actions button {
   flex: 1;
+}
+
+/* ====== RESPONSIVE ====== */
+@media (max-width: 600px) {
+  body {
+    padding: 15px;
+  }
+
+  h1 {
+    font-size: 22px;
+  }
+
+  .card {
+    padding: 15px;
+  }
 }
