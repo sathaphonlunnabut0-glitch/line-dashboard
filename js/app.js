@@ -7,11 +7,17 @@ const supabaseClient = createClient(
 
 let currentUser = null
 
+// =============================
+// INIT
+// =============================
 window.addEventListener("load", async () => {
   const { data: { session } } = await supabaseClient.auth.getSession()
   if (session) showDashboard(session.user)
 })
 
+// =============================
+// AUTH
+// =============================
 registerBtn.onclick = async () => {
   const { error } = await supabaseClient.auth.signUp({
     email: email.value,
@@ -29,6 +35,14 @@ loginBtn.onclick = async () => {
   else location.reload()
 }
 
+logoutBtn.onclick = async () => {
+  await supabaseClient.auth.signOut()
+  location.reload()
+}
+
+// =============================
+// DASHBOARD
+// =============================
 function showDashboard(user) {
   currentUser = user
   authSection.style.display = "none"
@@ -59,20 +73,22 @@ async function loadAllFiles() {
 
       const fullPath = folder + "/" + file.name
 
-      const { data: publicUrl } = supabaseClient
+      const { data: publicUrlData } = supabaseClient
         .storage
         .from("line-files")
         .getPublicUrl(fullPath)
+
+      const publicUrl = publicUrlData.publicUrl
 
       const isImage = file.name.match(/\.(jpg|jpeg|png|gif|webp)$/i)
 
       fileList.innerHTML += `
         <div class="file-card">
           <p>${fullPath}</p>
-          ${isImage ? `<img src="${publicUrl.publicUrl}">` : `<p>📄 File</p>`}
+          ${isImage ? `<img src="${publicUrl}">` : `<p>📄 File</p>`}
           <div class="actions">
-            <button onclick="downloadFile('${publicUrl.publicUrl}', '${file.name}')">
-                 Download
+            <button onclick="downloadFile('${publicUrl}', '${file.name}')">
+              Download
             </button>
             <button class="delete-btn" onclick="deleteFile('${fullPath}')">
               Delete
@@ -90,15 +106,35 @@ async function loadAllFiles() {
   }
 }
 
-function downloadFile(url, filename) {
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = filename;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
+// =============================
+// DOWNLOAD (PRO VERSION)
+// =============================
+async function downloadFile(url, filename) {
+  try {
+    const response = await fetch(url)
+    if (!response.ok) throw new Error("Network error")
+
+    const blob = await response.blob()
+    const blobUrl = window.URL.createObjectURL(blob)
+
+    const link = document.createElement("a")
+    link.href = blobUrl
+    link.download = filename
+
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+
+    window.URL.revokeObjectURL(blobUrl)
+  } catch (err) {
+    alert("ดาวน์โหลดไม่สำเร็จ")
+    console.error(err)
+  }
 }
 
+// =============================
+// DELETE
+// =============================
 async function deleteFile(path) {
   if (!confirm("ต้องการลบไฟล์นี้ใช่ไหม?")) return
 
@@ -112,9 +148,4 @@ async function deleteFile(path) {
   } else {
     loadAllFiles()
   }
-}
-
-logoutBtn.onclick = async () => {
-  await supabaseClient.auth.signOut()
-  location.reload()
 }
