@@ -100,7 +100,6 @@ button:hover {
 }
 .actions a {
   flex: 1;
-  display: flex;
   text-decoration: none;
   color: inherit;
 }
